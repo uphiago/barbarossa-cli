@@ -1,0 +1,16 @@
+# Barbarossa CLI Configuration
+# Paths searched: $BARBAROSSA_CONFIG → ./ → ~/
+# Environment variable overrides: DOCKER_HOST, BARBAROSSA_CONTAINERS
+
+docker:
+  # Docker daemon host (default: unix:///var/run/docker.sock)
+  host: unix:///var/run/docker.sock
+  # Docker API version (optional — auto-negotiated by default)
+  # api_version: "1.41"
+
+# List of container names to monitor
+containers:
+  names:
+    - charlie
+    - oscar
+    - papa
