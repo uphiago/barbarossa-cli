@@ -7,7 +7,7 @@ Terminal UI interativa para controlar o cluster Barbarossa (Hermes + charlie/osc
 
 ```
 go version:   1.25.0 (auto-downloaded via GOTOOLCHAIN)
-go build:     OK - 5.1MB binary
+go build:     OK - ~13MB binary
 go vet:       OK - no issues
 go install:   OK - installs to $GOPATH/bin/barbarossa-cli
 go mod tidy:  OK - 40 deps in go.sum
@@ -62,9 +62,14 @@ barbarossa-cli/
 ├── go.mod                      # Módulo Go (deps resolvidas)
 ├── DESIGN.md                   # Design completo: telas, cores, keybindings, milestones
 └── internal/
+    ├── config/config.go        # YAML, ambiente e defaults
+    ├── docker/client.go        # Docker API, stats e log streaming
+    ├── ssh/client.go           # Cliente SSH real e mock
     └── tui/
         ├── styles.go           # Paleta de cores, estilos base, mensagens, helpers
-        └── app.go              # Model principal (AppModel) + tabs + dashboard view
+        ├── app.go              # Model principal, tabs e dashboard
+        ├── recon.go            # Tabela de findings
+        └── logs.go             # Logs Docker ao vivo
 ```
 
 ## O que já está pronto
@@ -74,7 +79,7 @@ barbarossa-cli/
 - Estilos base: AppStyle, TitleStyle, BorderStyle, TabStyle, ActiveTabStyle, ErrorStyle, HelpStyle
 - Helpers: RenderBox, StatusDot, Truncate (parametrizados com `color.Color`)
 - Tipos de mensagem: WorkerStatusMsg, ActivityMsg, TickMsg
-- Comando de polling: PollWorkers() (mock — workers fixos)
+- Polling dos workers pela API Docker a cada 3 segundos
 
 ### `internal/tui/app.go`
 - AppModel com tabs ["DASH", "RECON", "LOG"], activeTab, worker state, activity log
@@ -87,7 +92,7 @@ barbarossa-cli/
   - Activity feed (últimas 10 ações)
   - Command bar na base
 - Help overlay
-- Placeholder views para RECON e LOG tabs
+- RECON e LOG integrados como submodels
 
 ### `main.go`
 - Inicializa App via `tui.NewApp()`
@@ -125,10 +130,11 @@ barbarossa-cli/
   - Navegação ↑↓, filtro 1-5
 
 ### M5 — SSH
-- [ ] `internal/ssh/client.go` — SSH wrapper
+- [x] `internal/ssh/client.go` — cliente real e mock
+- [ ] tela de terminal interativo e configuracao de host/porta/chave
 
 ### M6 — Logs tab
-- [ ] `internal/tui/logs.go` — viewport com tail -f
+- [x] `internal/tui/logs.go` — viewport com streaming real da API Docker
 
 ## Paleta de Cores (definida em styles.go)
 
@@ -151,7 +157,8 @@ Muted:    #5c6773
 - **oscar** (operate) — exploit dev: gdb, gcc, strace, + tools do charlie
 - **papa** (persist) — anonymous via Tor SOCKS5:9050
 
-O CLI se conecta via Docker API (socket ou TCP) e SSH.
+O CLI se conecta via Docker API (socket ou endpoint configurado). O cliente SSH
+existe, mas ainda nao esta ligado a uma tela da TUI.
 
 ## Como testar
 

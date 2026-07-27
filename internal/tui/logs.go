@@ -1,13 +1,17 @@
 package tui
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+
+	"github.com/uphiago/barbarossa-cli/internal/docker"
 )
 
 // Log entry
@@ -26,42 +30,96 @@ type LogsModel struct {
 	paused   bool
 	width    int
 	height   int
+	source   logSource
+	workers  []string
+	events   chan LogEntryMsg
+	started  bool
+	cancel   context.CancelFunc
 }
 
-func NewLogsModel() *LogsModel {
+type logSource interface {
+	ContainerLogs(context.Context, string, int) (docker.ContainerLogsResult, error)
+}
+
+type logStreamsClosedMsg struct{}
+
+func NewLogsModel(source logSource, workers []string) *LogsModel {
 	vp := viewport.New(viewport.WithWidth(80), viewport.WithHeight(15))
 	vp.Style = lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorderClr).
 		BorderForeground(BorderClr).
 		Padding(0, 1)
-	return &LogsModel{viewport: vp, entries: make([]LogEntryMsg, 0)}
+	return &LogsModel{
+		viewport: vp,
+		entries:  make([]LogEntryMsg, 0),
+		source:   source,
+		workers:  append([]string(nil), workers...),
+	}
 }
 
 func (m *LogsModel) Init() tea.Cmd {
-	return m.simulateStream()
+	if m.started || m.source == nil || len(m.workers) == 0 {
+		return nil
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	m.cancel = cancel
+	m.events = make(chan LogEntryMsg, 128)
+	m.started = true
+
+	var streams sync.WaitGroup
+	for _, worker := range m.workers {
+		streams.Add(1)
+		go func() {
+			defer streams.Done()
+			m.streamWorker(ctx, worker)
+		}()
+	}
+	go func() {
+		streams.Wait()
+		close(m.events)
+	}()
+
+	return m.waitForLog()
 }
 
-func (m *LogsModel) simulateStream() tea.Cmd {
-	return tea.Tick(800*time.Millisecond, func(t time.Time) tea.Msg {
-		workers := []string{"charlie", "oscar", "papa"}
-		msgs := []string{
-			"nmap scan complete \u2014 47 ports open",
-			"subfinder: 12 new subdomains discovered",
-			"nuclei: CVE-2024-1234 matched",
-			"httpx probe: 23 live hosts",
-			"ffuf: /admin /api /backup found",
-			"torsocks: circuit established",
-			"masscan sweep: /24 done in 2.3s",
-			"gdb: breakpoint hit @ 0x401234",
-			"strace: openat(/etc/passwd) = 3",
-			"health check: all services OK",
+func (m *LogsModel) streamWorker(ctx context.Context, worker string) {
+	stream, err := m.source.ContainerLogs(ctx, worker, 100)
+	if err != nil {
+		select {
+		case m.events <- LogEntryMsg{
+			Worker:    worker,
+			Line:      fmt.Sprintf("log stream unavailable: %v", err),
+			Timestamp: time.Now(),
+		}:
+		case <-ctx.Done():
 		}
-		return LogEntryMsg{
-			Worker:    workers[t.UnixNano()%3],
-			Line:      msgs[t.UnixNano()%int64(len(msgs))],
-			Timestamp: t,
+		return
+	}
+
+	lines := make(chan string)
+	go docker.NowStreamLogs(ctx, stream, lines)
+	for line := range lines {
+		select {
+		case m.events <- LogEntryMsg{
+			Worker:    worker,
+			Line:      line,
+			Timestamp: time.Now(),
+		}:
+		case <-ctx.Done():
+			return
 		}
-	})
+	}
+}
+
+func (m *LogsModel) waitForLog() tea.Cmd {
+	return func() tea.Msg {
+		entry, ok := <-m.events
+		if !ok {
+			return logStreamsClosedMsg{}
+		}
+		return entry
+	}
 }
 
 func (m *LogsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -86,7 +144,10 @@ func (m *LogsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.renderView()
 		}
-		return m, m.simulateStream()
+		return m, m.waitForLog()
+
+	case logStreamsClosedMsg:
+		return m, nil
 	}
 
 	var cmd tea.Cmd
@@ -138,7 +199,7 @@ func (m *LogsModel) View() tea.View {
 
 func (m *AppModel) renderLogTab() string {
 	if m.logModel == nil {
-		m.logModel = NewLogsModel()
+		m.logModel = NewLogsModel(m.docker, m.cfg.Containers.Names)
 	}
 	return m.logModel.View().Content
 }

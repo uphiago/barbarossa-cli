@@ -1,5 +1,9 @@
 # Implementation Plan: Barbarossa CLI v1
 
+> Status atual: consulte `tasks.md`. Este arquivo preserva o plano original;
+> a integracao Docker e os logs estao concluidos, enquanto o terminal SSH
+> interativo permanece pendente.
+
 **Branch**: `main` | **Date**: 2026-07-24 | **Spec**: [1-barbarossa-v1.md](../specs/1-barbarossa-v1.md)
 
 **Input**: Feature specification for the Barbarossa CLI — a Bubble Tea v2 TUI for monitoring a 3-worker Docker security cluster.

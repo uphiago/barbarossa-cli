@@ -52,7 +52,7 @@ Barbarossa CLI é uma interface TUI (Terminal User Interface) construída com [B
 | M2 - Dashboard | ✅ | Worker cards, activity feed, command bar |
 | M3 - Docker real | ✅ | Wrapper API Docker para stats ao vivo |
 | M4 - Recon | ✅ | Tabela interativa de findings |
-| M5 - SSH | 🚧 | Conexão SSH embedada (interface pronta) |
+| M5 - SSH | 🚧 | Cliente pronto; terminal interativo ainda não integrado |
 | M6 - Logs | ✅ | Viewport com streaming de logs dos workers |
 
 ---
@@ -78,6 +78,10 @@ Variáveis de ambiente sobrescrevem o arquivo:
 | `DOCKER_HOST` | Endereço do daemon Docker |
 | `BARBAROSSA_CONTAINERS` | Lista separada por vírgula de nomes de containers |
 | `BARBAROSSA_CONFIG` | Caminho completo para o arquivo de configuração |
+
+O daemon indicado por `DOCKER_HOST` precisa ser o mesmo que executa os workers.
+O socket padrão funciona quando o CLI roda no host OVH. Fora dele, use um
+endpoint ou túnel Docker autenticado; o CLI não cria o túnel automaticamente.
 
 ---
 

@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -9,8 +10,9 @@ import (
 	"strings"
 	"time"
 
-	mobyclient "github.com/moby/moby/client"
+	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/api/types/container"
+	mobyclient "github.com/moby/moby/client"
 )
 
 // ─── Types ───────────────────────────────────────────────────
@@ -142,7 +144,7 @@ func parseStats(v *container.StatsResponse) *Stats {
 
 	memUsed := float64(v.MemoryStats.Usage - v.MemoryStats.Stats["cache"])
 	memLimit := float64(v.MemoryStats.Limit)
-	memMB := math.Round(memUsed / 1024 / 1024 * 10) / 10
+	memMB := math.Round(memUsed/1024/1024*10) / 10
 	memPct := 0.0
 	if memLimit > 0 {
 		memPct = math.Round(memUsed/memLimit*100*10) / 10
@@ -161,31 +163,28 @@ func NowStreamLogs(ctx context.Context, stream io.ReadCloser, lines chan<- strin
 	defer close(lines)
 	defer stream.Close()
 
-	buf := make([]byte, 4096)
-	for {
+	reader, writer := io.Pipe()
+	stopClose := context.AfterFunc(ctx, func() {
+		_ = stream.Close()
+	})
+	defer stopClose()
+
+	go func() {
+		_, err := stdcopy.StdCopy(writer, writer, stream)
+		_ = writer.CloseWithError(err)
+	}()
+
+	scanner := bufio.NewScanner(reader)
+	scanner.Buffer(make([]byte, 64*1024), 1024*1024)
+	for scanner.Scan() {
 		select {
 		case <-ctx.Done():
 			return
-		default:
+		case lines <- scanner.Text():
 		}
-		n, err := stream.Read(buf)
-		if n > 0 {
-			data := buf[:n]
-			if len(data) > 8 {
-				data = data[8:]
-			}
-			text := strings.TrimRight(string(data), "\n\r")
-			if text != "" {
-				select {
-				case lines <- text:
-				case <-ctx.Done():
-					return
-				}
-			}
-		}
-		if err != nil {
-			return
-		}
+	}
+	if ctx.Err() != nil {
+		return
 	}
 }
 
