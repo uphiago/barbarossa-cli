@@ -46,8 +46,8 @@ type logStreamsClosedMsg struct{}
 func NewLogsModel(source logSource, workers []string) *LogsModel {
 	vp := viewport.New(viewport.WithWidth(80), viewport.WithHeight(15))
 	vp.Style = lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorderClr).
-		BorderForeground(BorderClr).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(Border()).
 		Padding(0, 1)
 	return &LogsModel{
 		viewport: vp,
@@ -160,10 +160,10 @@ func (m *LogsModel) renderView() {
 	for _, e := range m.entries {
 		clr := workerC[e.Worker]
 		if clr == nil {
-			clr = MutedClr
+			clr = Muted()
 		}
 		tag := lipgloss.NewStyle().Foreground(clr).Bold(true).Render(e.Worker)
-		timeTag := lipgloss.NewStyle().Foreground(MutedClr).Width(8).Render(e.Timestamp.Format("15:04:05"))
+		timeTag := lipgloss.NewStyle().Foreground(Muted()).Width(8).Render(e.Timestamp.Format("15:04:05"))
 		line := e.Line
 		if len(line) > 60 {
 			line = line[:57] + "..."
@@ -171,21 +171,21 @@ func (m *LogsModel) renderView() {
 		b.WriteString(fmt.Sprintf("%s  %-8s  %s\n", timeTag, tag, line))
 	}
 	if b.Len() == 0 {
-		b.WriteString(lipgloss.NewStyle().Foreground(MutedClr).Render("Waiting for logs..."))
+		b.WriteString(lipgloss.NewStyle().Foreground(Muted()).Render("Waiting for logs..."))
 	}
 	m.viewport.SetContent(b.String())
 	m.viewport.GotoBottom()
 }
 
 func (m *LogsModel) View() tea.View {
-	title := lipgloss.NewStyle().Foreground(Accent).Bold(true).Render("\U0001F4DC  Live Logs")
+	title := lipgloss.NewStyle().Foreground(Accent()).Bold(true).Render("\U0001F4DC  Live Logs")
 
-	status := lipgloss.NewStyle().Foreground(Low).Bold(true).Render("\u25B6 STREAMING")
+	status := lipgloss.NewStyle().Foreground(Low()).Bold(true).Render("\u25B6 STREAMING")
 	if m.paused {
-		status = lipgloss.NewStyle().Foreground(High).Bold(true).Render("\u23F8 PAUSED")
+		status = lipgloss.NewStyle().Foreground(High()).Bold(true).Render("\u23F8 PAUSED")
 	}
 
-	legend := lipgloss.NewStyle().Foreground(MutedClr).Render("[SPACE] toggle pause")
+	legend := lipgloss.NewStyle().Foreground(Muted()).Render("[SPACE] toggle pause")
 	header := lipgloss.JoinHorizontal(lipgloss.Left, title, "  ", status, "  ", legend)
 
 	return tea.NewView(lipgloss.JoinVertical(lipgloss.Left,

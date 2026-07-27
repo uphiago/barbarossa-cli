@@ -17,7 +17,7 @@ func main() {
 
 	client, err := docker.NewClientWithHost(cfg.Docker.Host)
 	if err != nil {
-		fmt.Printf("%s failed to connect to Docker: %v\n", tui.Error.Render("barbarossa:"), err)
+		fmt.Printf("%s failed to connect to Docker: %v\n", tui.Error().Render("barbarossa:"), err)
 		fmt.Println("Starting with mock data instead.")
 		client = nil
 	}
@@ -26,7 +26,7 @@ func main() {
 	prog := tea.NewProgram(model)
 
 	if _, err := prog.Run(); err != nil {
-		fmt.Printf("%s %v\n", tui.Error.Render("barbarossa:"), err)
+		fmt.Printf("%s %v\n", tui.Error().Render("barbarossa:"), err)
 		os.Exit(1)
 	}
 

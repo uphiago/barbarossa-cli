@@ -32,9 +32,9 @@ var workerC = map[string]color.Color{} // filled after theme
 
 func initWorkerColors() {
 	workerC = map[string]color.Color{
-		"charlie": Charlie,
-		"oscar":   Oscar,
-		"papa":    Papa,
+		"charlie": Charlie(),
+		"oscar":   Oscar(),
+		"papa":    Papa(),
 	}
 }
 
@@ -134,7 +134,7 @@ func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.activities = m.activities[len(m.activities)-50:]
 		}
 	case tea.BackgroundColorMsg:
-		m.darkBg = bool(v)
+		m.darkBg = v.IsDark()
 		SetAdaptive(m.darkBg)
 		initWorkerColors()
 	}
@@ -179,9 +179,9 @@ func (m *AppModel) tabBar() string {
 	var ts []string
 	for i, t := range m.tabs {
 		if i == m.activeTab {
-			ts = append(ts, TabActive.Render(" "+t+" "))
+			ts = append(ts, TabActive().Render(" "+t+" "))
 		} else {
-			ts = append(ts, TabInactive.Render(" "+t+" "))
+			ts = append(ts, TabInactive().Render(" "+t+" "))
 		}
 	}
 	row := lipgloss.JoinHorizontal(lipgloss.Top, ts...)
@@ -189,7 +189,7 @@ func (m *AppModel) tabBar() string {
 	if gw < 0 {
 		gw = 0
 	}
-	return lipgloss.JoinHorizontal(lipgloss.Bottom, row, lipgloss.NewStyle().Foreground(BorderClr).Render(strings.Repeat("\u2500", gw)))
+	return lipgloss.JoinHorizontal(lipgloss.Bottom, row, lipgloss.NewStyle().Foreground(Border()).Render(strings.Repeat("\u2500", gw)))
 }
 
 func (m *AppModel) body() string {
@@ -202,7 +202,7 @@ func (m *AppModel) body() string {
 	case 2:
 		c = m.logs()
 	}
-	return WindowFrame.Width(m.w - 2).Height(m.h - 6).Render(c)
+	return WindowFrame().Width(m.w - 2).Height(m.h - 6).Render(c)
 }
 func (m *AppModel) recon() string {
 	if m.reconModel == nil {
@@ -218,10 +218,10 @@ func (m *AppModel) logs() string {
 }
 
 func (m *AppModel) dash() string {
-	l := Bold.Foreground(Accent).Render("\u2694  BARBAROSSA")
+	l := Bold().Foreground(Accent()).Render("\u2694  BARBAROSSA")
 	s := Sub().Render("  \u00b7  cluster monitor")
 	clk := Sub().Render(time.Now().UTC().Format("15:04:05 UTC"))
-	hdr := Panel.Background(Bg).Width(m.w - 20).Render(lipgloss.JoinHorizontal(lipgloss.Center, l+s+"                ", clk))
+	hdr := Panel().Background(Bg()).Width(m.w - 20).Render(lipgloss.JoinHorizontal(lipgloss.Center, l+s+"                ", clk))
 
 	cardW := (m.w - 8) / 3
 	if cardW < 28 {
@@ -243,7 +243,7 @@ func (m *AppModel) dash() string {
 		cRow = lipgloss.JoinVertical(lipgloss.Left, cards...)
 	}
 
-	ft := Bold.Foreground(Accent).Render("\u25B8 ACTIVITY")
+	ft := Bold().Foreground(Accent()).Render("\u25B8 ACTIVITY")
 	var fl []string
 	st := 0
 	if len(m.activities) > 8 {
@@ -256,7 +256,7 @@ func (m *AppModel) dash() string {
 	if len(fl) == 0 {
 		fl = append(fl, Sub().Render("  waiting for first poll..."))
 	}
-	fb := Panel.Render(lipgloss.JoinVertical(lipgloss.Left, ft, "", lipgloss.JoinVertical(lipgloss.Left, fl...)))
+	fb := Panel().Render(lipgloss.JoinVertical(lipgloss.Left, ft, "", lipgloss.JoinVertical(lipgloss.Left, fl...)))
 
 	return lipgloss.JoinVertical(lipgloss.Left, hdr, "", cRow, "", fb)
 }
@@ -270,25 +270,25 @@ func (m *AppModel) footer() string {
 	if gap < 1 {
 		gap = 1
 	}
-	return lipgloss.NewStyle().Foreground(MutedClr).Padding(0, 1).BorderTop(true).BorderForeground(BorderClr).Width(m.w - 2).Render(left + strings.Repeat(" ", gap) + right)
+	return lipgloss.NewStyle().Foreground(Muted()).Padding(0, 1).BorderTop(true).BorderForeground(Border()).Width(m.w - 2).Render(left + strings.Repeat(" ", gap) + right)
 }
 
 func (m *AppModel) help() string {
 	row := func(k, d string) string {
-		return lipgloss.NewStyle().Foreground(Accent).Width(18).Render(k) + "  " + Sub().Render(d)
+		return lipgloss.NewStyle().Foreground(Accent()).Width(18).Render(k) + "  " + Sub().Render(d)
 	}
 	var b strings.Builder
-	b.WriteString(Bold.Foreground(Accent).Render("\u2694  BARBAROSSA CLI \u2014 Help") + "\n\n")
-	b.WriteString(Bold.Foreground(AccentDim).Render("Navigation") + "\n")
+	b.WriteString(Bold().Foreground(Accent()).Render("\u2694  BARBAROSSA CLI \u2014 Help") + "\n\n")
+	b.WriteString(Bold().Foreground(AccentDim()).Render("Navigation") + "\n")
 	b.WriteString(row("TAB / Shift+TAB", "Switch tabs") + "\n")
 	b.WriteString(row("\u2191 \u2193 Enter", "Navigate + select") + "\n\n")
-	b.WriteString(Bold.Foreground(AccentDim).Render("Actions") + "\n")
+	b.WriteString(Bold().Foreground(AccentDim()).Render("Actions") + "\n")
 	b.WriteString(row("R", "Refresh workers") + "\n")
 	b.WriteString(row("?", "Toggle help") + "\n")
 	b.WriteString(row("Q / Ctrl+C", "Quit") + "\n\n")
-	b.WriteString(Bold.Foreground(AccentDim).Render("Per Tab") + "\n")
+	b.WriteString(Bold().Foreground(AccentDim()).Render("Per Tab") + "\n")
 	b.WriteString(row("1-5 (Recon)", "Filter severity") + "\n")
 	b.WriteString(row("Space (Logs)", "Pause/resume") + "\n\n")
 	b.WriteString(Sub().Render("Press ? to close"))
-	return Panel.BorderForeground(Accent).Padding(2, 4).Width(55).Background(Bg).Render(b.String())
+	return Panel().BorderForeground(Accent()).Padding(2, 4).Width(55).Background(Bg()).Render(b.String())
 }
