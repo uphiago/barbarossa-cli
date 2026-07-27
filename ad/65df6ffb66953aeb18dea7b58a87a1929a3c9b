@@ -1,0 +1,24 @@
+.specify/plan.md
+  s_ab7b9f3ec54234::t_53919e4ba026fc 23,32,77-78,80-81,85-86,88-89,97-98,106
+.specify/specs/1-barbarossa-v1.md
+  s_ab7b9f3ec54234::t_53919e4ba026fc 5,90,125
+.specify/memory/constitution.md
+  s_ab7b9f3ec54234::t_77d33d466ec171 46
+  s_ab7b9f3ec54234::t_53919e4ba026fc 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "ad65df6ffb66953aeb18dea7b58a87a1929a3c9b",
+  "prompts": {},
+  "sessions": {
+    "s_ab7b9f3ec54234": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa4df-8a8e-7be3-94df-62ef4b4c9ba5",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}
