@@ -29,7 +29,7 @@ Dashboard polls Docker API every 3s. Logs stream via goroutines. RECON loads on 
 - Cold start (first View render) must complete within 500ms with no workers connected
 - Worker polling must not block UI rendering — stale data is acceptable within the 3s tick window
 - Memory usage must stay under 50MB RSS under normal operation
-- Binary size target: under 10MB (currently 5.1MB ✅)
+- Binary size target: under 10MB (currently approximately 13MB; target unmet)
 
 ## Development Workflow
 
@@ -43,4 +43,4 @@ Dashboard polls Docker API every 3s. Logs stream via goroutines. RECON loads on 
 
 This constitution supersedes all other development practices. Amendments require updating this file, committing with reason, and pushing. All code changes must align with the principles above. The AGENTS.md serves as runtime guidance and is subordinate to this constitution.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-24 | **Last Amended**: 2026-07-24
+**Version**: 1.0.1 | **Ratified**: 2026-07-24 | **Last Amended**: 2026-07-27

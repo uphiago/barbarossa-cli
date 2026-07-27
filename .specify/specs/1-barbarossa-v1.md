@@ -2,7 +2,7 @@
 
 **Feature Branch**: `main`
 **Created**: 2026-07-24
-**Status**: In Progress (M1-M2 done, M3-M6 pending)
+**Status**: In Progress (M1-M4 and M6 done; interactive portion of M5 pending)
 
 **Input**: A terminal UI for monitoring and controlling a 3-worker offensive security Docker cluster (charlie, oscar, papa).
 
@@ -87,7 +87,7 @@ Embedded SSH to worker from TERM tab.
 - **No Docker**: cards show OFFLINE with "Docker unreachable".
 - **No containers**: cards show OFFLINE with "not found".
 - **Rapid tab switch**: no flicker, atomic transitions.
-- **Binary >10MB**: treated as regression.
+- **Binary >10MB**: current known gap; approximately 13 MB.
 - **Empty states**: "No recent activity", "No findings yet".
 - **SSH timeout 5s**: show error, keep UI responsive.
 - **Concurrent poll + render**: tea.Msg queue serializes.
@@ -122,7 +122,7 @@ Embedded SSH to worker from TERM tab.
 
 - SC-001: Dashboard renders <500ms cold start
 - SC-002: Cards update within 3s of container state change
-- SC-003: Binary <10MB (currently 5.1MB)
+- SC-003: Binary <10MB (currently approximately 13 MB; unmet)
 - SC-004: Zero unhandled panics
 - SC-005: All shortcuts documented in help overlay
 - SC-006: Memory <50MB RSS after 10min idle

@@ -20,7 +20,7 @@ Build a keyboard-navigable terminal UI with 3 tabs (DASH, RECON, LOG) using Char
 **Testing**: go test ./... with tea.testing for TUI component assertions
 **Target Platform**: Linux/macOS terminal (256-color), 80x24 minimum
 **Project Type**: CLI / TUI application (single binary)
-**Performance Goals**: <500ms cold start, <50MB RSS, <10MB binary
+**Performance Goals**: <500ms cold start, <50MB RSS, <10MB binary (size target currently unmet)
 **Constraints**: Zero blocking I/O; all Docker/SSH operations async via tea.Cmd
 **Scale/Scope**: 3 workers, 3 tabs, ~2000 LOC total
 
@@ -29,7 +29,7 @@ Build a keyboard-navigable terminal UI with 3 tabs (DASH, RECON, LOG) using Char
 | Principle | Check |
 |-----------|-------|
 | I. TUI-First, Keyboard-Centric | ✅ TAB/Shift+TAB focus switching, ? help, Q quit, all via tea.KeyMsg |
-| II. Worker Independence | ✅ PollWorkers() mock data; cards degrade to OFFLINE; no blocking calls |
+| II. Worker Independence | ✅ Docker polling real; cards degrade to OFFLINE; no blocking calls |
 | III. Composeable UI Components | ✅ styles.go central styles; app.go/recon.go/logs.go separate files |
 | IV. Zero-Bloat Dependencies | ✅ Only charm ecosystem + x/crypto/ssh + docker/client behind interfaces |
 | V. Real-Time, Not Poll-Heavy | ✅ 3s Tick polling; tea.Batch for parallel commands; goroutines for logs |
@@ -74,18 +74,19 @@ barbarossa-cli/
 - [x] app.go with AppModel, tabs, polling, worker cards, activity feed, help
 - [x] styles.go with palette, base styles, helpers, message types
 - [x] main.go entrypoint
-- [x] go mod tidy, go build passes, go vet clean, 5.1MB binary
+- [x] go mod tidy, go build and go vet pass
+- [ ] Reduce the current approximately 13 MB binary below the 10 MB target
 
-### Phase 1: Real Docker Integration (M3)
-- [ ] `internal/docker/client.go` — Docker client interface:
+### Phase 1: Real Docker Integration (M3) ✅
+- [x] `internal/docker/client.go` — Docker client interface:
   - `type Client interface { ListContainers() (...); ContainerStats(name string) (...); ContainerLogs(name string) (... io.ReadCloser) }`
   - Real implementation using `github.com/docker/docker/client`
   - Mock implementation for testing
-- [ ] Replace PollWorkers() mock with real Docker API calls
-- [ ] Container name config via environment or flag (default: charlie, oscar, papa)
+- [x] Replace PollWorkers() mock with real Docker API calls
+- [x] Container name config via environment (default: charlie, oscar, papa)
 
-### Phase 2: Recon Findings Table (M4)
-- [ ] `internal/tui/recon.go` — findings tab:
+### Phase 2: Recon Findings Table (M4) ✅
+- [x] `internal/tui/recon.go` — findings tab:
   - Uses `charm.land/bubbles/v2/table` for interactive table
   - Columns: Target, Finding, Severity, Status
   - Severity color-coded (CRITICAL=red, HIGH=orange, MEDIUM=yellow, LOW=green)
@@ -93,8 +94,8 @@ barbarossa-cli/
   - Filter keys 1-5
   - Mock data for testing; later sourced from worker scans
 
-### Phase 3: Log Streaming (M6)
-- [ ] `internal/tui/logs.go` — log tab:
+### Phase 3: Log Streaming (M6) ✅
+- [x] `internal/tui/logs.go` — log tab:
   - Uses `charm.land/bubbles/v2/viewport` for scrollable content
   - 3 goroutines reading from Docker container logs
   - Color-coded by worker (charlie=cyan, oscar=orange, papa=green)
@@ -102,7 +103,7 @@ barbarossa-cli/
   - Scroll tracking (auto-scroll to bottom when at bottom)
 
 ### Phase 4: SSH Terminal (M5)
-- [ ] `internal/ssh/client.go` — SSH client wrapper
+- [x] `internal/ssh/client.go` — SSH client wrapper
 - [ ] `internal/tui/terminal.go` — embedded terminal tab
   - Worker selection popup
   - Interactive shell via pty
