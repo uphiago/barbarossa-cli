@@ -1,0 +1,29 @@
+internal/tui/recon.go
+  s_ab7b9f3ec54234::t_d8784a2f725d69 32,42-46,51,138,148
+  s_ab7b9f3ec54234::t_7ab37ac4a8adeb 25-31,33-36,47-50,66-74,111-112,115,117-118,121,139-147,149-155,174-175
+internal/tui/logs.go
+  s_ab7b9f3ec54234::t_d8784a2f725d69 50,163,166,174,181,183,185,188
+  s_ab7b9f3ec54234::t_322527e3d07dd0 49
+main.go
+  s_ab7b9f3ec54234::t_d8784a2f725d69 20,29
+internal/tui/app.go
+  s_ab7b9f3ec54234::t_d8784a2f725d69 35-37,137,182,184,192,205,221,224,246,259,273,278,281-282,285,289,293
+internal/tui/styles.go
+  s_ab7b9f3ec54234::t_0401cb9b9976e8 20-22,28-34,37-38,42-43,46-49,51-59,76-80,83-87,104-106,113-115,120-122,131-133,137-140,142,145-148,163-171,175-183,188-195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "560b5b22c62e6e1e9a9aa2733f74a44c579749e6",
+  "prompts": {},
+  "sessions": {
+    "s_ab7b9f3ec54234": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fa4df-8a8e-7be3-94df-62ef4b4c9ba5",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "uphiago <hollyvolks@hotmail.com>"
+    }
+  }
+}
